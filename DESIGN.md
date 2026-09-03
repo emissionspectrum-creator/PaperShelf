@@ -206,10 +206,10 @@ index 是唯一會被完整瀏覽的公開頁面。**標題不得包含孩子姓
 
 ### 已知的取捨
 
-- repo 設為私有以保護原始檔（圖像、打包器程式碼），但**站台仍為公開**
-- GitHub Pages 的私有發布需要 GitHub Enterprise Cloud；Pro / Team 方案下，即使 repo 私有，站台預設仍對外可見
-- 接受此現實，以「網址不外流」作為現實層面的保護
-- 因此第 7、8 節的姓名與學校限制是必要的，不是可選的
+- **repo 為公開，不是私有。** 原先設想「repo 私有、站台公開」需要 GitHub Pro / Team 以上方案；實際嘗試時發現目前帳號的方案（Free）連這個折衷都不提供——私有 repo 直接無法開啟 Pages（API 回傳 422 `Your current plan does not support GitHub Pages for this repository`）。已與使用者確認，選擇改用公開 repo，而非升級付費方案
+- 這代表 `source-images/`（原始題目圖片）與 `packager/`（打包器程式碼）現在也是公開的，可被任何人透過 GitHub 直接瀏覽，不只是 Pages 站台，暴露範圍比原設想更大
+- 以「網址/repo 不外流」作為現實層面的保護
+- 因此第 7、8 節的姓名與學校限制是必要的，不是可選的；第 12 節「著作權」提到的掃描既有考卷風險，因 repo 公開而更需留意
 
 ### 已知限制
 
