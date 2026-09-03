@@ -25,6 +25,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
 <style>
+  html {
+    scroll-snap-type: y mandatory;
+  }
   html, body {
     margin: 0;
     padding: 0;
@@ -33,15 +36,20 @@
   .frame {
     box-sizing: border-box;
     width: min(900px, 96vw);
-    margin: 0 auto 3rem auto;
-  }
-  .frame:first-child {
-    margin-top: 2rem;
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    scroll-snap-align: start;
   }
   .frame img {
     display: block;
     margin: 0 auto;
     max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
     height: auto;
   }
 </style>
