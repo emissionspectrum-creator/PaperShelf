@@ -5,6 +5,7 @@
 ## 使用方式
 
 1. 把已裁切好的題目圖片放進 `source-images/`
+   - 用生圖軟體產生圖片時，長寬比建議 1:1～4:5（寬:高），解析度寬約 1800px（細節見 [DESIGN.md](DESIGN.md) 第 5 節）
 2. 啟動打包器：
    - Ubuntu：雙擊桌面捷徑，或執行 `./start-packager.sh`
    - Windows 11：雙擊 `start-packager.bat`
