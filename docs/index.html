@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>考卷列表</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #f5f4f0; font-family: system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 1.5rem; }
+  .filters { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+  select { font-size: 1rem; padding: 0.3rem; }
+  ul { list-style: none; padding: 0; }
+  li { margin-bottom: 0.5rem; }
+  a { display: block; padding: 0.75rem 1rem; background: #fff; border-radius: 6px; text-decoration: none; color: #222; }
+</style>
+</head>
+<body>
+<main>
+  <h1>考卷列表</h1>
+  <div class="filters">
+    <select id="grade-filter"><option value="">全部年級</option></select>
+    <select id="subject-filter"><option value="">全部科目</option></select>
+  </div>
+  <ul id="exam-list">
+
+  </ul>
+</main>
+<script>
+  const gradeSel = document.getElementById('grade-filter');
+  const subjectSel = document.getElementById('subject-filter');
+  const items = Array.from(document.querySelectorAll('#exam-list li'));
+  function applyFilter() {
+    const g = gradeSel.value, s = subjectSel.value;
+    items.forEach(li => {
+      const show = (!g || li.dataset.grade === g) && (!s || li.dataset.subject === s);
+      li.style.display = show ? '' : 'none';
+    });
+  }
+  gradeSel.addEventListener('change', applyFilter);
+  subjectSel.addEventListener('change', applyFilter);
+</script>
+</body>
+</html>

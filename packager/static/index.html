@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PaperShelf 打包器</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <h1>PaperShelf 打包器</h1>
+  <div class="header-actions">
+    <button id="save-btn">儲存</button>
+    <button id="publish-btn">發布（git commit + push）</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="controls">
+    <section>
+      <h2>1. 圖片</h2>
+      <p class="hint">來源：source-images/</p>
+      <ul id="image-list" class="image-list"></ul>
+    </section>
+
+    <section>
+      <h2>2. 已選題目（依序顯示）</h2>
+      <ul id="queue-list" class="queue-list"></ul>
+    </section>
+
+    <section>
+      <h2>3. 分類資訊</h2>
+      <label>年級 <select id="grade"></select></label>
+      <label>科目 <select id="subject"></select></label>
+      <label>序號 <input id="seq" type="number" min="1"></label>
+      <label>範圍 <input id="scope" type="text" placeholder="例：第三課"></label>
+    </section>
+
+    <section>
+      <h2>既有考卷</h2>
+      <ul id="exam-list" class="exam-list"></ul>
+    </section>
+  </aside>
+
+  <section class="preview-wrap">
+    <h2>預覽（即最終考卷 HTML）</h2>
+    <iframe id="preview"></iframe>
+  </section>
+</div>
+
+<script src="/static/exam-template.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
