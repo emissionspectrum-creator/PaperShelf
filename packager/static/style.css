@@ -47,6 +47,15 @@ header h1 {
   margin: 0 0 0.5rem;
 }
 
+.controls summary {
+  font-size: 0.95rem;
+  cursor: pointer;
+  margin: 0 0 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .hint {
   font-size: 0.8rem;
   color: #777;

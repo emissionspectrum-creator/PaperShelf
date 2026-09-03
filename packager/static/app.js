@@ -95,6 +95,12 @@ async function addToQueue(path) {
   updatePreview();
 }
 
+async function addAllToQueue() {
+  for (const path of images) {
+    await addToQueue(path);
+  }
+}
+
 function moveItem(i, delta) {
   const j = i + delta;
   if (j < 0 || j >= queue.length) return;
@@ -266,5 +272,10 @@ async function publish() {
 
 document.getElementById("save-btn").addEventListener("click", save);
 document.getElementById("publish-btn").addEventListener("click", publish);
+document.getElementById("add-all-btn").addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  addAllToQueue();
+});
 
 init();
