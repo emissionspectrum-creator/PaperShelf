@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=PaperShelf 打包器
+Comment=啟動 PaperShelf 本機打包伺服器並開啟瀏覽器
+Exec=/mnt/data/for-kid-education/PaperShelf/start-packager.sh
+Icon=utilities-terminal
+Terminal=true
+Categories=Utility;
