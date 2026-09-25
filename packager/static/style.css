@@ -81,7 +81,7 @@ ul {
 .exam-list li {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.4rem;
   padding: 0.35rem 0.5rem;
   border-bottom: 1px solid #eee;
   font-size: 0.85rem;
@@ -135,4 +135,8 @@ select, input[type="text"], input[type="number"] {
   height: 85vh;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.exam-list li span {
+  margin-right: auto;
 }

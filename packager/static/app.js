@@ -187,10 +187,16 @@ function renderExamList() {
       const li = document.createElement("li");
       const span = document.createElement("span");
       span.textContent = `${e.grade} ${e.subject}${e.scope ? " · " + e.scope : ""}`;
+      const open = document.createElement("button");
+      open.textContent = "開啟";
+      open.onclick = () => window.open("/docs/" + e.file.split("/").map(encodeURIComponent).join("/"), "_blank");
+      const pdf = document.createElement("button");
+      pdf.textContent = "PDF";
+      pdf.onclick = () => exportSavedExamPdf(e);
       const del = document.createElement("button");
       del.textContent = "刪除";
       del.onclick = () => deleteExam(e.id);
-      li.append(span, del);
+      li.append(span, open, pdf, del);
       el.appendChild(li);
     });
 }
@@ -275,7 +281,7 @@ function toPdfPage(q) {
         scale: q.scale,
       });
     };
-    img.onerror = () => reject(new Error("讀取圖片失敗：" + q.path));
+    img.onerror = () => reject(new Error("讀取圖片失敗"));
     img.src = q.dataUrl;
   });
 }
@@ -291,9 +297,33 @@ async function exportPdf() {
   }
 
   const id = `${grade}-${subject}-${String(seq).padStart(3, "0")}`;
+  await writePdf(id, queue);
+}
+
+// 從已存檔的考卷 HTML 取回每題圖片與縮放比例，走同一套 PDF 輸出流程
+async function exportSavedExamPdf(exam) {
+  const res = await fetch("/docs/" + exam.file.split("/").map(encodeURIComponent).join("/"));
+  if (!res.ok) {
+    alert("讀取考卷失敗：" + exam.file);
+    return;
+  }
+  const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+  const questions = Array.from(doc.querySelectorAll(".frame img")).map((img) => ({
+    dataUrl: img.getAttribute("src"),
+    scale: parseFloat(img.style.width) || 100,
+  }));
+  if (questions.length === 0) {
+    alert("考卷裡沒有題目：" + exam.file);
+    return;
+  }
+  await writePdf(exam.id, questions);
+}
+
+// questions: [{ dataUrl, scale }]
+async function writePdf(id, questions) {
   let pages;
   try {
-    pages = await Promise.all(queue.map(toPdfPage));
+    pages = await Promise.all(questions.map(toPdfPage));
   } catch (err) {
     alert(err.message);
     return;

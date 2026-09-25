@@ -224,6 +224,16 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send_json({"error": "not found"}, 404)
             return self._send_file(target)
 
+        if path.startswith("/docs/"):
+            rel = unquote(path[len("/docs/"):])
+            target = (DOCS_DIR / rel).resolve()
+            base = DOCS_DIR.resolve()
+            if base not in target.parents:
+                return self._send_json({"error": "invalid path"}, 400)
+            if not target.is_file():
+                return self._send_json({"error": "not found"}, 404)
+            return self._send_file(target)
+
         if path.startswith("/static/"):
             rel = unquote(path[len("/static/"):])
             target = (STATIC_DIR / rel).resolve()
