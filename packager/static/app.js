@@ -1,5 +1,5 @@
 const GRADES = ["國小一年級", "國小二年級", "國小三年級", "國小四年級", "國小五年級", "國小六年級"];
-const SUBJECTS = ["國文", "數學"];
+const SUBJECTS = ["國文", "數學", "英文文法"];
 
 let images = [];
 let manifest = { exams: [] };

@@ -29,7 +29,7 @@ Key invariants spanning files:
 
 - **`packager/static/exam-template.js` `buildExamHtml()` is the single source of exam HTML.** The preview iframe (`srcdoc`) and the saved file both use it — preview must never use separate display logic (DESIGN §6). Exam HTML must stay single-file with base64-embedded images, relative widths (no fixed px widths), no `user-scalable=no`, one question per viewport via CSS `scroll-snap`, off-white `#f5f4f0` background (not pure white, not dark).
 - `docs/index.html` is rendered by `render_index_html()` in `server.py`, sorted by `addedAt` descending, filterable by grade/subject.
-- `manifest.json` is the only persistent state (versioned in git). Entry id format is `年級-科目-序號` with 3-digit zero-padded seq (e.g. `國小一年級-數學-001`), which is also the exam filename. Grades are 國小一～六年級; subjects are 國文、數學 (hard-coded in `app.js` `GRADES`/`SUBJECTS`).
+- `manifest.json` is the only persistent state (versioned in git). Entry id format is `年級-科目-序號` with 3-digit zero-padded seq (e.g. `國小一年級-數學-001`), which is also the exam filename. Grades are 國小一～六年級; subjects are 國文、數學、英文文法 (hard-coded in `app.js` `GRADES`/`SUBJECTS`).
 - **Privacy:** the repo and site are public. Filenames, page titles, and index entries must never contain the child's name or school name.
 
 ## Question image guidance
