@@ -277,5 +277,12 @@ document.getElementById("add-all-btn").addEventListener("click", (e) => {
   e.stopPropagation();
   addAllToQueue();
 });
+document.getElementById("open-folder-btn").addEventListener("click", async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const res = await fetch("/api/open-source-folder", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+  const data = await res.json();
+  if (!data.ok) alert("開啟資料夾失敗：" + (data.error || ""));
+});
 
 init();

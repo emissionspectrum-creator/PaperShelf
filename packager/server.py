@@ -5,7 +5,9 @@
 """
 import json
 import mimetypes
+import os
 import subprocess
+import sys
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -185,6 +187,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._handle_render_index()
         if path == "/api/publish":
             return self._handle_publish(body)
+        if path == "/api/open-source-folder":
+            return self._handle_open_source_folder()
 
         return self._send_json({"error": "not found"}, 404)
 
@@ -241,6 +245,17 @@ class Handler(BaseHTTPRequestHandler):
         html = render_index_html(manifest)
         DOCS_DIR.mkdir(parents=True, exist_ok=True)
         (DOCS_DIR / "index.html").write_text(html, encoding="utf-8")
+        return self._send_json({"ok": True})
+
+    def _handle_open_source_folder(self):
+        SOURCE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            if sys.platform == "win32":
+                os.startfile(SOURCE_IMAGES_DIR)
+            else:
+                subprocess.Popen(["xdg-open", str(SOURCE_IMAGES_DIR)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError as e:
+            return self._send_json({"ok": False, "error": str(e)}, 500)
         return self._send_json({"ok": True})
 
     def _handle_publish(self, body):
