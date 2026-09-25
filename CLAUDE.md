@@ -21,7 +21,7 @@ Two separate halves:
 
 1. **Packager (local only)** — `packager/server.py` is a stdlib `http.server` that only does file I/O and git proxying:
    - `GET /api/images` lists `source-images/` (recursive, jpg/png/webp); `GET /api/image/<path>` serves one.
-   - `POST /api/exam` writes `docs/exams/<id>.html`; `POST /api/manifest` (`action: add|delete`) edits `manifest.json` (delete also removes the exam HTML); `POST /api/index` regenerates `docs/index.html`; `POST /api/publish` runs `git add -A && git commit && git push` in the repo root. `POST /api/open-source-folder` opens `source-images/` in the OS file manager (`xdg-open` / `os.startfile`; path is fixed server-side).
+   - `POST /api/exam` writes `docs/exams/<id>.html`; `POST /api/manifest` (`action: add|delete`) edits `manifest.json` (delete also removes the exam HTML); `POST /api/index` regenerates `docs/index.html`; `POST /api/publish` runs `git add -A && git commit && git push` in the repo root. `POST /api/open-source-folder` opens `source-images/` in the OS file manager (`xdg-open` / `os.startfile`; path is fixed server-side). `POST /api/pdf` writes a print PDF (A4, one question per page, orientation per image, per-question scale applied) to `~/下載` (fallback `~/Downloads`), outside the repo; the browser converts each image to JPEG via canvas and `build_pdf()` assembles the PDF with stdlib only.
    - Frontend in `packager/static/` (`app.js`): pick images → queue/reorder → per-question scale % → preview → save → publish. Images are fetched and converted to base64 data URLs in the browser.
 2. **Published site** — `docs/` is the GitHub Pages root (https://emissionspectrum-creator.github.io/PaperShelf/). Everything in it is generated; never hand-edit `docs/index.html` or `docs/exams/*.html`.
 

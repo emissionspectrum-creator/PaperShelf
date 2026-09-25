@@ -256,6 +256,68 @@ async function save() {
   alert("已儲存：" + id);
 }
 
+// 鋪白底後轉成 JPEG，供伺服器組成列印用 PDF（DESIGN.md 第 6 節「列印用 PDF」）
+function toPdfPage(q) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+      resolve({
+        jpeg: canvas.toDataURL("image/jpeg", 0.95).split(",")[1],
+        width: canvas.width,
+        height: canvas.height,
+        scale: q.scale,
+      });
+    };
+    img.onerror = () => reject(new Error("讀取圖片失敗：" + q.path));
+    img.src = q.dataUrl;
+  });
+}
+
+async function exportPdf() {
+  const grade = document.getElementById("grade").value;
+  const subject = document.getElementById("subject").value;
+  const seq = Number(document.getElementById("seq").value);
+
+  if (!grade || !subject || !seq || queue.length === 0) {
+    alert("請選擇年級、科目、序號，並至少加入一題");
+    return;
+  }
+
+  const id = `${grade}-${subject}-${String(seq).padStart(3, "0")}`;
+  let pages;
+  try {
+    pages = await Promise.all(queue.map(toPdfPage));
+  } catch (err) {
+    alert(err.message);
+    return;
+  }
+
+  const post = (overwrite) =>
+    fetch("/api/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, pages, overwrite }),
+    }).then((r) => r.json());
+
+  let data = await post(false);
+  if (data.exists) {
+    if (!confirm("「" + data.file + "」已存在，要覆蓋嗎？")) return;
+    data = await post(true);
+  }
+  if (!data.ok) {
+    alert("轉成 PDF 失敗：" + (data.error || ""));
+    return;
+  }
+  alert("已輸出 PDF：" + data.file);
+}
+
 async function publish() {
   const res = await fetch("/api/publish", {
     method: "POST",
@@ -270,6 +332,7 @@ async function publish() {
   alert("已發布：\n" + data.output);
 }
 
+document.getElementById("pdf-btn").addEventListener("click", exportPdf);
 document.getElementById("save-btn").addEventListener("click", save);
 document.getElementById("publish-btn").addEventListener("click", publish);
 document.getElementById("add-all-btn").addEventListener("click", (e) => {

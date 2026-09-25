@@ -3,6 +3,7 @@
 
 執行：python3 packager/server.py，然後開啟 http://localhost:8420
 """
+import base64
 import json
 import mimetypes
 import os
@@ -21,6 +22,69 @@ EXAMS_DIR = DOCS_DIR / "exams"
 MANIFEST_PATH = ROOT / "manifest.json"
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
+
+# 列印用 PDF（DESIGN.md 第 6 節「列印用 PDF」），單位為 pt
+A4_SHORT, A4_LONG = 595.28, 841.89
+PDF_MARGIN = 15 / 25.4 * 72
+
+
+def pdf_output_dir():
+    home = Path.home()
+    zh = home / "下載"
+    return zh if zh.is_dir() else home / "Downloads"
+
+
+def build_pdf(pages):
+    """pages: [{"jpeg": bytes, "width": px, "height": px, "scale": 百分比}]，一題一頁。"""
+    objects = []  # objects[i] 為第 i+1 號物件的內容（bytes）
+
+    def add(obj):
+        objects.append(obj)
+        return len(objects)
+
+    catalog = add(None)
+    pages_obj = add(None)
+    kids = []
+    for page in pages:
+        w, h = page["width"], page["height"]
+        pw, ph = (A4_LONG, A4_SHORT) if w > h else (A4_SHORT, A4_LONG)
+        avail_w, avail_h = pw - 2 * PDF_MARGIN, ph - 2 * PDF_MARGIN
+        dw = avail_w * min(page["scale"], 100) / 100
+        dh = dw * h / w
+        if dh > avail_h:
+            dw, dh = dw * avail_h / dh, avail_h
+        x, y = (pw - dw) / 2, (ph - dh) / 2
+
+        jpeg = page["jpeg"]
+        image = add(
+            f"<< /Type /XObject /Subtype /Image /Width {w} /Height {h} /ColorSpace /DeviceRGB "
+            f"/BitsPerComponent 8 /Filter /DCTDecode /Length {len(jpeg)} >>\nstream\n".encode()
+            + jpeg
+            + b"\nendstream"
+        )
+        content = f"q {dw:.2f} 0 0 {dh:.2f} {x:.2f} {y:.2f} cm /Im0 Do Q".encode()
+        contents = add(f"<< /Length {len(content)} >>\nstream\n".encode() + content + b"\nendstream")
+        kids.append(
+            add(
+                f"<< /Type /Page /Parent {pages_obj} 0 R /MediaBox [0 0 {pw} {ph}] "
+                f"/Resources << /XObject << /Im0 {image} 0 R >> >> /Contents {contents} 0 R >>".encode()
+            )
+        )
+    objects[catalog - 1] = f"<< /Type /Catalog /Pages {pages_obj} 0 R >>".encode()
+    objects[pages_obj - 1] = (
+        f"<< /Type /Pages /Kids [{' '.join(f'{k} 0 R' for k in kids)}] /Count {len(kids)} >>".encode()
+    )
+
+    out = bytearray(b"%PDF-1.4\n%\xe2\xe3\xcf\xd3\n")
+    offsets = []
+    for i, obj in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out += f"{i} 0 obj\n".encode() + obj + b"\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode()
+    out += "".join(f"{o:010d} 00000 n \n" for o in offsets).encode()
+    out += f"trailer\n<< /Size {len(objects) + 1} /Root {catalog} 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    return bytes(out)
 TW_TZ = timezone(timedelta(hours=8))
 
 
@@ -189,6 +253,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._handle_publish(body)
         if path == "/api/open-source-folder":
             return self._handle_open_source_folder()
+        if path == "/api/pdf":
+            return self._handle_pdf(body)
 
         return self._send_json({"error": "not found"}, 404)
 
@@ -246,6 +312,36 @@ class Handler(BaseHTTPRequestHandler):
         DOCS_DIR.mkdir(parents=True, exist_ok=True)
         (DOCS_DIR / "index.html").write_text(html, encoding="utf-8")
         return self._send_json({"ok": True})
+
+    def _handle_pdf(self, body):
+        exam_id = body.get("id", "")
+        pages = body.get("pages") or []
+        if not exam_id or not pages:
+            return self._send_json({"error": "id and pages required"}, 400)
+        safe_id = "".join(c for c in exam_id if c not in '/\\:*?"<>|')
+        if safe_id != exam_id:
+            return self._send_json({"error": "invalid id"}, 400)
+        out_dir = pdf_output_dir()
+        out_path = out_dir / f"{safe_id}.pdf"
+        if out_path.exists() and not body.get("overwrite"):
+            return self._send_json({"ok": False, "exists": True, "file": str(out_path)})
+        try:
+            pdf = build_pdf(
+                [
+                    {
+                        "jpeg": base64.b64decode(p["jpeg"]),
+                        "width": int(p["width"]),
+                        "height": int(p["height"]),
+                        "scale": float(p["scale"]),
+                    }
+                    for p in pages
+                ]
+            )
+        except (KeyError, ValueError, TypeError) as e:
+            return self._send_json({"error": f"bad page data: {e}"}, 400)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_path.write_bytes(pdf)
+        return self._send_json({"ok": True, "file": str(out_path)})
 
     def _handle_open_source_folder(self):
         SOURCE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
